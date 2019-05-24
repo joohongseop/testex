@@ -3,6 +3,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <!-- 앞의 내용은 header에서 이어서 작동한다. -->
 <%@include file="../includes/header.jsp"%>
 <div class="row">
@@ -18,7 +20,12 @@
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				Board List Page
-				<button id='regBtn' type="button" class="btn btn-xs pull-right">Register New Board</button>
+				<sec:authorize access="isAuthenticated()">
+					<button id='regBtn' type="button" class="btn btn-xs pull-right">Register New Board</button>
+				</sec:authorize>
+				<sec:authorize access="isAnonymous()">
+					<button onclick='self.location = "${pageContext.request.contextPath}/customLogin"' class="btn btn-xs pull-right">Register New Board</button>
+				</sec:authorize>
 			</div>
 
 			<!-- /.panel-heading -->

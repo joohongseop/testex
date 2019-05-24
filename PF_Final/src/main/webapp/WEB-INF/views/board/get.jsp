@@ -155,7 +155,13 @@
         		</sec:authorize>
       		</div>      
       		<!-- /.panel-heading -->
-      		<div class="panel-body">         
+      		<div class="panel-body">
+      			<sec:authentication property="principal" var="pinfo"/>
+      			<sec:authorize access="isAuthenticated()">
+  					<textarea id='reply2' style="margin: 0px;width: 90%;height: 100px;resize: none;"></textarea>
+      				<input type='hidden' id='replyer2' value="${pinfo.username}">
+      				<input type="button" id="RegisterBtn" value="등록">
+      			</sec:authorize>
         		<ul class="chat"></ul>
         	<!-- ./ end ul -->
       		</div>
@@ -235,7 +241,7 @@ $(document).ready(function () {
     		for (var i = 0, len = list.length || 0; i < len; i++) {
     			str +="<li class='left clearfix' data-rno='" + list[i].rno + "'>";
     			str +="  <div><div class='header'><strong class='primary-font'>[" +list[i].rno+ "] " + list[i].replyer + "</strong>"; 
-       			str +="    <small class='pull-right text-muted'>" + replyService.displayTime(list[i].replyDate) + "</small></div>";
+       			str +="    <small class='pull-right text-muted'>" + replyService.displayTime(list[i].updateDate) + "</small></div>";
        			str +="    <p>" +list[i].reply + "</p></div></li>";
      		}
     		
@@ -317,7 +323,7 @@ $(document).ready(function () {
     });
     
     // 입력에 필요한 부분만을 표시하고 그 외의 부분은 모두  숨김처리
-    $("#addReplyBtn").on("click", function(e) {
+    /* $("#addReplyBtn").on("click", function(e) {
     	modal.find("input").val("");
     	modal.find("input[name='replyer']").val(replyer);
     	modalInputReplyDate.closest("div").hide();
@@ -325,7 +331,7 @@ $(document).ready(function () {
     	
     	modalRegisterBtn.show();
     	$(".modal").modal("show");
-    });
+    }); */
     
     //Ajax spring security header
     $(document).ajaxSend(function(e, xhr, options) { 
@@ -333,7 +339,20 @@ $(document).ready(function () {
     }); 
     
 	// 새로운 댓글을 추가하는 부분
-    modalRegisterBtn.on("click",function(e) {
+    $("#RegisterBtn").on("click",function(e) {
+    	var reply = { reply: $('#reply2').val(), replyer:$('#replyer2').val(), bno:bnoValue };
+    	replyService.add(reply, function(result){
+    		alert(result);
+    		modal.find("input").val("");
+    		modal.modal("hide");
+    		//showList(1);
+    		$('#reply2').val("");
+    		showList(-1);
+    	});
+    });
+    
+	// 새로운 댓글을 추가하는 부분
+	/*modalRegisterBtn.on("click",function(e) {
     	var reply = { reply: modalInputReply.val(), replyer:modalInputReplyer.val(), bno:bnoValue };
     	replyService.add(reply, function(result){
     		alert(result);
@@ -342,19 +361,22 @@ $(document).ready(function () {
     		//showList(1);
     		showList(-1);
     	});
-    });
+    }); */
 
   	//댓글 조회 클릭 이벤트 처리 
     $(".chat").on("click", "li", function(e) {
     	var rno = $(this).data("rno");
     	replyService.get(rno, function(reply) {
     		modalInputReply.val(reply.reply);
-    		modalInputReplyer.val(reply.replyer);
+    		modalInputReplyer.val(reply.replyer).attr("readonly","readonly");
     		modalInputReplyDate.val(replyService.displayTime(reply.replyDate)).attr("readonly","readonly");
     		modal.data("rno", reply.rno);
     		modal.find("button[id !='modalCloseBtn']").hide();
-    		modalModBtn.show();
-    		modalRemoveBtn.show();
+    		var originalReplyer = modalInputReplyer.val();
+    		if(replyer == originalReplyer) {
+    			modalModBtn.show();
+    			modalRemoveBtn.show();
+    		}
     		$(".modal").modal("show");
     	});
     });
